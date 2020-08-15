@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
-const validator = require('validator');
+// const validator = require('validator');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -47,11 +47,7 @@ const tourSchema = new mongoose.Schema(
         'A tour must have a difficulty!',
       ],
       enum: {
-        values: [
-          'easy',
-          'medium',
-          'difficult',
-        ],
+        values: ['easy', 'medium', 'difficult'],
         message:
           'Difficulty is either "easy", "medium" or "difficult".',
       },
@@ -59,14 +55,8 @@ const tourSchema = new mongoose.Schema(
     ratingsAverage: {
       type: Number,
       default: 4.5,
-      min: [
-        1,
-        'Rating must be above 1.0!',
-      ],
-      max: [
-        5,
-        'Rating must be below 5.0!',
-      ],
+      min: [1, 'Rating must be above 1.0!'],
+      max: [5, 'Rating must be below 5.0!'],
     },
     ratingsQuantity: {
       type: Number,
@@ -156,9 +146,7 @@ tourSchema.pre('save', function (next) {
 // }); // runs after .save()
 
 // QUERY Middleware : runs before find()
-tourSchema.pre(/^find/, function (
-  next
-) {
+tourSchema.pre(/^find/, function (next) {
   //with regular expression we are handling find() and findOne(), so user can't get secret tour with findById
   // tourSchema.pre('find', function (next) {
   this.find({
@@ -169,10 +157,7 @@ tourSchema.pre(/^find/, function (
   next();
 }); // find point to the current query
 
-tourSchema.post(/^find/, function (
-  docs,
-  next
-) {
+tourSchema.post(/^find/, function (docs, next) {
   console.log(
     `Query took ${
       Date.now() - this.start //measure time from pre to post middleware
@@ -182,9 +167,7 @@ tourSchema.post(/^find/, function (
 });
 
 // AGGREGATION Middleware
-tourSchema.pre('aggregate', function (
-  next
-) {
+tourSchema.pre('aggregate', function (next) {
   this.pipeline().unshift({
     $match: {
       secretTour: { $ne: true },
@@ -194,9 +177,6 @@ tourSchema.pre('aggregate', function (
   next();
 });
 
-const Tour = mongoose.model(
-  'Tour',
-  tourSchema
-);
+const Tour = mongoose.model('Tour', tourSchema);
 
 module.exports = Tour;
