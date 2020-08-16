@@ -15,13 +15,9 @@ class APIFeatures {
       'limit',
       'fields',
     ]; // exclude all those words from filter results
-    excludedFields.forEach(
-      (el) => delete queryObj[el]
-    );
+    excludedFields.forEach((el) => delete queryObj[el]);
     // 1B) Advanced Filtering
-    let queryStr = JSON.stringify(
-      queryObj
-    );
+    let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(
       /\b(gte|gt|lte|lt)\b/g,
       (match) => `$${match}`
@@ -31,9 +27,7 @@ class APIFeatures {
     // { difficulty: 'easy', duration: { gte: 5 }} // what we got from req.query (we are missing only $)
     // gte, gt, lte, lt
 
-    this.query = this.query.find(
-      JSON.parse(queryStr)
-    );
+    this.query = this.query.find(JSON.parse(queryStr));
 
     return this; // return whole method so we can chain another one
   }
@@ -44,14 +38,10 @@ class APIFeatures {
         .split(',')
         .join(' ');
 
-      this.query = this.query.sort(
-        sortBy
-      );
+      this.query = this.query.sort(sortBy);
       // sort('price ratingsAverage')
     } else {
-      this.query = this.query.sort(
-        '-createdAt'
-      ); // by default order by createdAt descending
+      this.query = this.query.sort('-createdAt'); // by default order by createdAt descending
     }
 
     return this;
@@ -62,28 +52,20 @@ class APIFeatures {
       const fields = this.queryString.fields
         .split(',')
         .join(' ');
-      this.query = this.query.select(
-        fields
-      );
+      this.query = this.query.select(fields);
     } else {
-      this.query = this.query.select(
-        '-__v'
-      ); // exclude __v field
+      this.query = this.query.select('-__v'); // exclude __v field
     }
 
     return this;
   }
 
   paginate() {
-    const page =
-      this.queryString.page * 1 || 1; // || 1 - defining default value of 1 page
-    const limit =
-      this.queryString.limit * 1 || 100;
+    const page = this.queryString.page * 1 || 1; // || 1 - defining default value of 1 page
+    const limit = this.queryString.limit * 1 || 100;
     const skip = (page - 1) * limit;
     // page=2&limit=10, 1-10 page1, 11-20 page2, 21-30 page3
-    this.query = this.query
-      .skip(skip)
-      .limit(limit);
+    this.query = this.query.skip(skip).limit(limit);
 
     return this;
   }
