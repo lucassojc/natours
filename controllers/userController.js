@@ -1,19 +1,55 @@
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
-exports.getAllUsers = catchAsync(
-  async (req, res, next) => {
-    const users = await User.find();
+const filterObj = (obj, ...allowedFields) => {
+  const newObj = {};
+  Object.keys(obj).forEach((el) => {
+    if (allowedFields.includes(el)) newObj[el] = obj[el];
+  });
+  return newObj;
+};
 
-    res.status(200).json({
-      status: 'success',
-      results: users.length,
-      data: {
-        users: users,
-      },
-    });
+exports.getAllUsers = catchAsync(async (req, res, next) => {
+  const users = await User.find();
+
+  res.status(200).json({
+    status: 'success',
+    results: users.length,
+    data: {
+      users: users,
+    },
+  });
+});
+
+exports.updateMe = catchAsync(async (req, res, next) => {
+  // 1) Create error if user POSTs password database
+  if (req.body.password || req.body.passwordConfirm) {
+    return next(
+      new AppError(
+        'This route is not for password updates. Please use /updateMyPassword.',
+        400
+      )
+    );
   }
-);
+
+  // 2) Filtered out unwanted field names that we don't want to be updated
+  const filteredBody = filterObj(req.body, 'name', 'email'); // filter request body so it contain just name and email, and not some other data like role which we don't want
+
+  // 3) Update user document
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user.id,
+    filteredBody,
+    { new: true, runValidators: true }
+  ); // we can use findByIdAndUpdate here because we are not dealing with password
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: updatedUser,
+    },
+  });
+});
 
 exports.getUser = (req, res) => {
   res.status(500).json({
