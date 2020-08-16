@@ -6,10 +6,7 @@ const tourSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [
-        true,
-        'A tour must have a name!',
-      ],
+      required: [true, 'A tour must have a name!'],
       unique: true,
       trim: true,
       maxlength: [
@@ -28,24 +25,15 @@ const tourSchema = new mongoose.Schema(
     slug: String,
     duration: {
       type: Number,
-      required: [
-        true,
-        'The tour must have a duration!',
-      ],
+      required: [true, 'The tour must have a duration!'],
     },
     maxGroupSize: {
       type: Number,
-      required: [
-        true,
-        'A tour must have a group size!',
-      ],
+      required: [true, 'A tour must have a group size!'],
     },
     difficulty: {
       type: String,
-      required: [
-        true,
-        'A tour must have a difficulty!',
-      ],
+      required: [true, 'A tour must have a difficulty!'],
       enum: {
         values: ['easy', 'medium', 'difficult'],
         message:
@@ -64,10 +52,7 @@ const tourSchema = new mongoose.Schema(
     },
     price: {
       type: Number,
-      required: [
-        true,
-        'A tour must have a price!',
-      ],
+      required: [true, 'A tour must have a price!'],
     },
     priceDiscount: {
       type: Number,
@@ -83,10 +68,7 @@ const tourSchema = new mongoose.Schema(
     summary: {
       type: String,
       trim: true, //cut white space
-      required: [
-        true,
-        'A tour must have a description!',
-      ],
+      required: [true, 'A tour must have a description!'],
     },
     description: {
       type: String,
@@ -94,10 +76,7 @@ const tourSchema = new mongoose.Schema(
     },
     imageCover: {
       type: String,
-      required: [
-        true,
-        'A tour must have an image!',
-      ],
+      required: [true, 'A tour must have an image!'],
     },
     images: [String], //array of strings for more image paths
     createdAt: {
@@ -118,11 +97,9 @@ const tourSchema = new mongoose.Schema(
 ); // second object in mongoose Schema is reserved for options
 
 // VIRTUAL properties - when we don't need it in database.
-tourSchema
-  .virtual('durationWeeks')
-  .get(function () {
-    return this.duration / 7;
-  }); // we use normal function , because arrow function don't have this keyword, here this is pointing to the current document
+tourSchema.virtual('durationWeeks').get(function () {
+  return this.duration / 7;
+}); // we use normal function , because arrow function don't have this keyword, here this is pointing to the current document
 
 // DOCUMENT Middleware: runs before .save() and .create() *********************************************************************
 tourSchema.pre('save', function (next) {
