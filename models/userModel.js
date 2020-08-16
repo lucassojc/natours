@@ -10,10 +10,7 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [
-      true,
-      'Please enter your email address.',
-    ],
+    required: [true, 'Please enter your email address.'],
     unique: true,
     lowercase: true,
     validate: [
@@ -35,10 +32,7 @@ const userSchema = new mongoose.Schema({
   },
   passwordConfirm: {
     type: String,
-    required: [
-      true,
-      'Please confirm a password.',
-    ],
+    required: [true, 'Please confirm a password.'],
     validate: {
       // This only works on CREATE and SAVE!
       validator: function (el) {
@@ -52,14 +46,19 @@ const userSchema = new mongoose.Schema({
   passwordResetExpires: Date,
 });
 
+userSchema.pre('save', function (next) {
+  if (!this.isModified('password') || this.isNew)
+    return next(); // we want to exit this middleware if document isn't modified or if it's newly created
+
+  next();
+  this.passwordChangedAt = Date.now() - 1000; // HACK : we are subtracting 1sec because sometimes saving to the database is a bit slower then issuing token
+});
+
 userSchema.pre('save', async function (next) {
   // Only run this function if the password was modified
   if (!this.isModified('password')) return next();
   // Hash the password with cost of 12
-  this.password = await bcrypt.hash(
-    this.password,
-    12
-  ); // default salt is 10, 12 is more powerful encryption
+  this.password = await bcrypt.hash(this.password, 12); // default salt is 10, 12 is more powerful encryption
 
   // Delete password confirmation field,  we don't need it anymore
   this.passwordConfirm = undefined;
@@ -93,22 +92,16 @@ userSchema.methods.changedPasswordAfter = function (
 };
 
 userSchema.methods.createPasswordResetToken = function () {
-  const resetToken = crypto
-    .randomBytes(32)
-    .toString('hex');
+  const resetToken = crypto.randomBytes(32).toString('hex');
 
   this.passwordResetToken = crypto
     .createHash('sha256')
     .update(resetToken)
     .digest('hex');
 
-  console.log(
-    { resetToken },
-    this.passwordResetToken
-  );
+  console.log({ resetToken }, this.passwordResetToken);
 
-  this.passwordResetExpires =
-    Date.now() + 10 * 60 * 1000;
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
   return resetToken;
 };
