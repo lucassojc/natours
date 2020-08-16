@@ -5,10 +5,22 @@ const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const sendEmail = require('../utils/email');
+const { use } = require('../routes/tourRoutes');
 
 const signToken = (id) => {
   return jwt.sign({ id: id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
+
+const createSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user: user,
+    },
   });
 };
 
@@ -20,15 +32,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
   }); // we are only allowing those fields
 
-  const token = signToken(newUser._id);
-
-  res.status(201).json({
-    status: 'success',
-    token,
-    data: {
-      user: newUser,
-    },
-  });
+  createSendToken(newUser, 201, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -44,7 +48,7 @@ exports.login = catchAsync(async (req, res, next) => {
   // 2) Check if user exists && password is correct
   const user = await User.findOne({
     email: email,
-  }).select('+password');
+  }).select('+password'); // we need to specifically ask for password because it is not included in the output by default
 
   if (
     !user ||
@@ -56,11 +60,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   // 3) If everything is ok, send token to client
-  const token = signToken(user._id);
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(user, 200, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -212,10 +212,37 @@ exports.resetPassword = catchAsync(
     // 3) Update changedPasswordAt property for user
 
     // 4) Log the user in, send JWT
-    const token = signToken(user._id);
-    res.status(200).json({
-      status: 'success',
-      token,
-    });
+    createSendToken(user, 200, res);
+  }
+);
+
+exports.updatePassword = catchAsync(
+  async (req, res, next) => {
+    // 1) Get user from the collection
+    const user = await User.findById(req.user.id).select(
+      '+password' // we need to specifically ask for password because it is not included in the output by default
+    );
+    // 2) Check if the POSTed password is correct
+    if (
+      !(await user.correctPassword(
+        req.body.passwordCurrent,
+        user.password
+      ))
+    ) {
+      return next(
+        new AppError(
+          'Your current password is incorrect.',
+          401
+        )
+      );
+    }
+    // 3) If so, update the password
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    await user.save(); // we want validation when working with passwords
+    // User.findByIdAndUpdate() - we cannot use because validation, when working with passwords we are using save()
+
+    // 4) Log user in, send JWT
+    createSendToken(user, 200, res);
   }
 );
