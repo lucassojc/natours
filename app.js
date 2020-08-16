@@ -15,12 +15,11 @@ if (
   app.use(morgan('dev')); //HTTP request logger middleware
 }
 app.use(express.json()); //middleware for converting body to json
-app.use(
-  express.static(`${__dirname}/public`)
-);
+app.use(express.static(`${__dirname}/public`));
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
+  console.log(req.headers);
   next();
 });
 
