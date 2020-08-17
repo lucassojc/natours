@@ -173,6 +173,14 @@ tourSchema.pre(/^find/, function (next) {
   next();
 }); // find point to the current query
 
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt', // hide those fields
+  }); // populate('guides') fill up field called guides in our model
+  next();
+});
+
 tourSchema.post(/^find/, function (docs, next) {
   console.log(
     `Query took ${
