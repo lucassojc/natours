@@ -132,6 +132,13 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 }); // we use normal function , because arrow function don't have this keyword, here this is pointing to the current document
 
+// VIRTUAL populate
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  foreignField: 'tour', // field where your id is stored in reviews
+  localField: '_id', // local id field
+});
+
 // DOCUMENT Middleware: runs before .save() and .create() *********************************************************************
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, {
