@@ -32,6 +32,17 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
+reviewSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'tour',
+    select: 'name', // we only want tour name
+  }).populate({
+    path: 'user',
+    select: 'name photo',
+  });
+  next();
+}); // populate tour and user in find methods, behind scenes these are 2 queries
+
 const Review = mongoose.model('Review', reviewSchema);
 
 module.exports = Review;
