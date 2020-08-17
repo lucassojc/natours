@@ -1,7 +1,7 @@
 const express = require('express');
 const tourController = require('../controllers/tourController');
 const authController = require('../controllers/authController');
-const reviewController = require('../controllers/reviewController');
+const reviewRouter = require('./reviewRoutes');
 
 const router = express.Router();
 
@@ -9,6 +9,8 @@ const router = express.Router();
 //   'id',
 //   tourController.checkID
 // );
+
+router.use('/:tourId/reviews', reviewRouter); // router is just middleware so we can use(), on this specific route reviewRouter (exactly the same we did in app.js)
 
 router
   .route('/top-5-cheap')
@@ -41,17 +43,6 @@ router
     authController.protect,
     authController.restrictTo('admin'), // for more roles authController.restrictTo('admin', 'user')
     tourController.deleteTour
-  );
-
-// POST /tour/123124/reviews
-// GET  /tour/123124/reviews
-// GET  /tour/123124/reviews/2132131
-router
-  .route('/:tourId/reviews')
-  .post(
-    authController.protect,
-    authController.restrictTo('user'),
-    reviewController.createReview
   );
 
 module.exports = router;
