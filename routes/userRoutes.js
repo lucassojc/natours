@@ -1,8 +1,8 @@
 const express = require('express');
-
-const router = express.Router();
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
+
+const router = express.Router();
 
 router.post('/signup', authController.signup);
 router.post('/login', authController.login);
@@ -16,28 +16,24 @@ router.patch(
   authController.resetPassword
 );
 
+// Protect all routes after this middleware
+router.use(authController.protect); // always call protect middleware from this point
+
 router.patch(
   '/updateMyPassword',
-  authController.protect,
   authController.updatePassword
 );
 
 router.get(
   '/me',
-  authController.protect,
   userController.getMe, // faking that user = user.id instead of getting it from params
   userController.getUser
 );
-router.patch(
-  '/updateMe',
-  authController.protect,
-  userController.updateMe
-);
-router.delete(
-  '/deleteMe',
-  authController.protect,
-  userController.deleteMe
-);
+router.patch('/updateMe', userController.updateMe);
+router.delete('/deleteMe', userController.deleteMe);
+
+// Restrict all routes after this middleware
+router.use(authController.restrictTo('admin'));
 
 router
   .route('/')

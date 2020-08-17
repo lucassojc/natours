@@ -5,11 +5,6 @@ const reviewRouter = require('./reviewRoutes');
 
 const router = express.Router();
 
-// router.param(
-//   'id',
-//   tourController.checkID
-// );
-
 router.use('/:tourId/reviews', reviewRouter); // router is just middleware so we can use(), on this specific route reviewRouter (exactly the same we did in app.js)
 
 router
@@ -25,22 +20,35 @@ router
 
 router
   .route('/monthly-plan/:year')
-  .get(tourController.getMonthlyPlan);
+  .get(
+    authController.protect,
+    authController.restrictTo(
+      'admin',
+      'lead-guide',
+      'guide'
+    ),
+    tourController.getMonthlyPlan
+  );
 
 router
   .route('/')
-  .get(
-    authController.protect, // middleware for authentication (protect route)
-    tourController.getAllTours
-  )
-  .post(tourController.createTour);
+  .get(tourController.getAllTours)
+  .post(
+    authController.protect,
+    authController.restrictTo('admin'),
+    tourController.createTour
+  );
 
 router
   .route('/:id')
   .get(tourController.getTour)
-  .patch(tourController.updateTour)
-  .delete(
+  .patch(
     authController.protect,
+    authController.restrictTo('admin'),
+    tourController.updateTour
+  )
+  .delete(
+    authController.protect, // middleware for authentication (protect route)
     authController.restrictTo('admin'), // for more roles authController.restrictTo('admin', 'user')
     tourController.deleteTour
   );
