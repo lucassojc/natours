@@ -96,6 +96,7 @@ exports.getAll = (Model) =>
       .limitFields()
       .paginate(); // this chaining works only because after each method we returned 'this'
 
+    // const doc = await features.query.explain(); // to check examination for creating indexes
     const doc = await features.query;
     // query.sort().select().skip().limit() // example of one query
 

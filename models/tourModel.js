@@ -127,6 +127,10 @@ const tourSchema = new mongoose.Schema(
   } // set these two if we have virtuals
 ); // second object in mongoose Schema is reserved for options
 
+// tourSchema.index({ price: 1 }); //improve performance of database, when we query only price will be examined
+tourSchema.index({ price: 1, ratingsAverage: -1 }); //improve performance of database, when we query only price and ratingsAverage will be examined
+tourSchema.index({ slug: 1 });
+
 // VIRTUAL properties - when we don't need it in database.
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
