@@ -22,12 +22,17 @@ router.patch(
   authController.updatePassword
 );
 
+router.get(
+  '/me',
+  authController.protect,
+  userController.getMe, // faking that user = user.id instead of getting it from params
+  userController.getUser
+);
 router.patch(
   '/updateMe',
   authController.protect,
   userController.updateMe
 );
-
 router.delete(
   '/deleteMe',
   authController.protect,
